@@ -166,13 +166,21 @@
             return '<tr>\n' + content + '</tr>\n';
         };
 
-        renderer.codespan = function(text) {
+        renderer.code = function(code, language) {
             var result = '';
-            if(text.indexOf(flagSign) !== -1) {
-                text = text.replace(flagSign, '');
+            if(code.indexOf(flagSign) !== -1) {
+                code = code.replace(flagSign, '');
+                result = aPoint;
+            } else if(language.indexOf(flagSign) !== -1) {
+                language = language.replace(flagSign, '');
                 result = aPoint;
             }
-            return result + '<code>' + text + '</code>\n'
+            if (language == "c#") {
+              language = "cs";
+            }
+            var validLang = !!(language && hljs.getLanguage(language));
+            highlighted = validLang ? hljs.highlight(language, code).value : code;
+            return result + '<pre><code class="hljs ' + language + '">' + highlighted + '</code></pre>';
         };
 
         renderer.image = function(href, title, text) {
@@ -213,19 +221,6 @@
     })();
 
     marked.setOptions({
-        highlight: function (code) {
-            var i, len, line;
-            code = code.split('\n');
-            for(i = 0, len = code.length; i < len; i++) {
-                line = code[i];
-                if(line.indexOf(options.flagSign) !== -1) {
-                    code[i] = line.replace(options.flagSign, '') + ' code' + options.flagSign + 'code';
-                }
-            }
-            code = code.join('\n');
-            code =  hljs.highlightAuto(code).value;
-            return code.replace('code' + options.flagSign + 'code', options.aPoint);
-        },
         renderer: options.renderer,
         breaks: true
     });
